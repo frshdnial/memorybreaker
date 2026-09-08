@@ -153,6 +153,7 @@
   .board{
     background:var(--panel-2); border:1px solid var(--line); border-top:none;
     padding:26px; display:grid; gap:16px; justify-content:center;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 120px));
   }
   .card{ width:100%; max-width:150px; aspect-ratio:3/4; perspective:900px; cursor:pointer; margin:0 auto; }
   .card.disabled{ cursor:default; }
@@ -236,6 +237,52 @@
 
   @media (prefers-reduced-motion: reduce){
     .card-inner, .tile, .btn, .tray-slot{ transition:none !important; }
+  }
+
+  /* ===== TABLET / SMALL DESKTOP ===== */
+  @media (max-width:720px){
+    .stats{ gap:14px; }
+    .board{ grid-template-columns: repeat(auto-fit, minmax(80px, 105px)); gap:12px; }
+  }
+
+  /* ===== PHONE ===== */
+  @media (max-width:480px){
+    body{ padding:12px; }
+    #start .chip-frame{ padding:30px 18px 26px; }
+    .eyebrow-mark{ font-size:11px; margin-bottom:14px; }
+    .subtitle{ font-size:15px; margin-bottom:24px; }
+    .stage-preview{ gap:8px; margin-bottom:26px; }
+    .sp-item{ min-width:74px; padding:8px 10px; }
+    .sp-item .sp-detail{ font-size:10px; }
+    .steps{ gap:12px; margin-bottom:28px; }
+    .step p{ font-size:13.5px; }
+    .btn{ padding:12px 22px; font-size:14px; width:100%; }
+
+    .topbar{ padding:12px 14px; }
+    .topbar .brand{ font-size:11.5px; }
+    .stats{ gap:10px; width:100%; justify-content:space-between; }
+    .stat{ font-size:11.5px; }
+    .stage-dot{ width:17px; height:17px; font-size:9px; }
+
+    .board{ padding:14px; gap:10px; grid-template-columns: repeat(auto-fit, minmax(68px, 82px)); }
+    .card-front .icon{ font-size:18px; }
+    .card-front .label{ font-size:9px; }
+
+    .tray-wrap{ padding:12px 14px; gap:10px; }
+    .tray-label{ font-size:11px; }
+    .tray-slot{ width:28px; height:28px; font-size:13px; }
+
+    .overlay-panel{ padding:26px 18px; max-width:100%; }
+    .overlay h2{ font-size:21px; }
+    .overlay p.desc{ font-size:13.5px; margin-bottom:20px; }
+    .timer-ring{ width:72px; height:72px; margin-bottom:20px; }
+    .timer-ring .inner{ width:56px; height:56px; font-size:19px; }
+    .tile, .slot{ width:38px; height:46px; font-size:17px; }
+    .tiles-row, .slots-row{ gap:7px; }
+    .win-word{ font-size:24px; }
+    .lose-word{ font-size:20px; }
+    .overlay-actions{ flex-direction:column; }
+    .overlay-actions .btn{ width:100%; }
   }
 </style>
 </head>
@@ -475,8 +522,6 @@
   function renderBoard(){
     const board = $('board');
     board.innerHTML = '';
-    const cols = numPairs; // 2 rows x numPairs columns
-    board.style.gridTemplateColumns = `repeat(${Math.min(cols,5)}, minmax(90px,1fr))`;
     cards.forEach(c=>{
       const el = document.createElement('div');
       el.className = 'card';
