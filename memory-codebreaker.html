@@ -1,47 +1,62 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Memory Codebreaker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<meta name="theme-color" content="#0F0710">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<title>PERSAKA 26/27 // Memory Codebreaker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #090D17;
-    --panel: #121A2D;
-    --panel-2: #182338;
-    --line: #263352;
-    --line-soft: #1B2740;
-    --amber: #F2B705;
-    --amber-dim: #7A650A;
-    --teal: #4FD8C4;
-    --teal-dim: #1E5A52;
+    --bg: #0F0710;
+    --panel: #1B0F16;
+    --panel-2: #241521;
+    --line: #422433;
+    --line-soft: #2A1A25;
+    --amber: #C7255A;
+    --amber-dim: #55112A;
+    --teal: #E3B24C;
+    --teal-dim: #6B5324;
     --red: #FF5D5D;
-    --text: #E9EFFB;
-    --text-dim: #8CA0C4;
+    --text: #F6EEF2;
+    --text-dim: #C7A6B4;
     --radius: 6px;
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-l: env(safe-area-inset-left, 0px);
+    --safe-r: env(safe-area-inset-right, 0px);
   }
 
-  *{box-sizing:border-box;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
+  html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   body{
     margin:0;
     min-height:100vh;
     min-height:100dvh;
     background:
-      radial-gradient(ellipse 800px 500px at 15% 0%, rgba(242,183,5,0.07), transparent 60%),
-      radial-gradient(ellipse 900px 600px at 100% 100%, rgba(79,216,196,0.06), transparent 60%),
+      radial-gradient(ellipse 800px 500px at 15% 0%, rgba(199,37,90,0.07), transparent 60%),
+      radial-gradient(ellipse 900px 600px at 100% 100%, rgba(227,178,76,0.06), transparent 60%),
       var(--bg);
     color:var(--text);
     font-family:'Space Grotesk', sans-serif;
     display:flex;
     align-items:flex-start;
     justify-content:center;
-    padding:40px 24px;
+    padding:calc(40px + var(--safe-t)) calc(24px + var(--safe-r)) calc(40px + var(--safe-b)) calc(24px + var(--safe-l));
     overflow-x:hidden;
+    touch-action:manipulation;
+    -webkit-user-select:none;
+    user-select:none;
   }
+  input, textarea{ -webkit-user-select:text; user-select:text; }
+  button, .card, .tile, .slot{ touch-action:manipulation; }
 
   body::before{
     content:"";
@@ -58,6 +73,19 @@
 
   .stage-wrap{ position:relative; width:100%; max-width:960px; }
   .mono{ font-family:'JetBrains Mono', monospace; }
+
+  .persaka-mark{
+    width:22px; height:22px; border-radius:5px; flex:none;
+    background:linear-gradient(145deg, var(--amber), #7A0F30);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-weight:800; font-size:11px; color:#FBEFE0;
+    box-shadow:0 0 0 1px rgba(227,178,76,0.5), 0 4px 10px -4px rgba(199,37,90,0.7);
+  }
+  .club-tag{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.04em;
+    color:var(--teal); margin-bottom:10px;
+  }
 
   .chip-frame{
     background:var(--panel);
@@ -122,11 +150,11 @@
     transition:transform .12s ease, box-shadow .12s ease, background .15s ease;
   }
   .btn:active{ transform:scale(0.97); }
-  .btn-primary{ background:var(--amber); color:#1A1300; box-shadow:0 0 0 1px rgba(242,183,5,0.4), 0 8px 24px -8px rgba(242,183,5,0.5); }
-  .btn-primary:hover{ box-shadow:0 0 0 1px rgba(242,183,5,0.6), 0 10px 28px -6px rgba(242,183,5,0.65); }
+  .btn-primary{ background:var(--amber); color:#2B0512; box-shadow:0 0 0 1px rgba(199,37,90,0.4), 0 8px 24px -8px rgba(199,37,90,0.5); }
+  .btn-primary:hover{ box-shadow:0 0 0 1px rgba(199,37,90,0.6), 0 10px 28px -6px rgba(199,37,90,0.65); }
   .btn-ghost{ background:transparent; color:var(--text-dim); border-color:var(--line); }
   .btn-ghost:hover{ color:var(--text); border-color:var(--teal-dim); }
-  .btn-teal{ background:var(--teal); color:#04231E; box-shadow:0 0 0 1px rgba(79,216,196,0.4), 0 8px 24px -8px rgba(79,216,196,0.5); }
+  .btn-teal{ background:var(--teal); color:#2E2308; box-shadow:0 0 0 1px rgba(227,178,76,0.4), 0 8px 24px -8px rgba(227,178,76,0.5); }
 
   /* ===== GAME SCREEN ===== */
   #game .topbar{
@@ -148,8 +176,8 @@
     font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-dim);
     background:var(--panel-2);
   }
-  .stage-dot.done{ border-color:var(--teal); color:var(--teal); background:rgba(79,216,196,0.08); }
-  .stage-dot.current{ border-color:var(--amber); color:var(--amber); background:rgba(242,183,5,0.1); }
+  .stage-dot.done{ border-color:var(--teal); color:var(--teal); background:rgba(227,178,76,0.08); }
+  .stage-dot.current{ border-color:var(--amber); color:var(--amber); background:rgba(199,37,90,0.1); }
 
   .board{
     background:var(--panel-2); border:1px solid var(--line); border-top:none;
@@ -161,10 +189,10 @@
   .card-inner{ position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .45s cubic-bezier(.2,.8,.2,1); }
   .card.flipped .card-inner, .card.matched .card-inner{ transform:rotateY(180deg); }
   .card-face{ position:absolute; inset:0; border-radius:5px; backface-visibility:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; border:1px solid var(--line); }
-  .card-back{ background: repeating-linear-gradient(45deg, transparent 0 8px, rgba(242,183,5,0.05) 8px 9px), var(--panel); }
+  .card-back{ background: repeating-linear-gradient(45deg, transparent 0 8px, rgba(199,37,90,0.05) 8px 9px), var(--panel); }
   .card-back::after{ content:"◆"; color:var(--amber-dim); font-size:18px; }
   .card-front{ background:var(--panel-2); transform:rotateY(180deg); gap:6px; padding:8px; }
-  .card.matched .card-front{ border-color:var(--teal); box-shadow:inset 0 0 0 1px var(--teal), 0 0 16px -4px rgba(79,216,196,0.6); }
+  .card.matched .card-front{ border-color:var(--teal); box-shadow:inset 0 0 0 1px var(--teal), 0 0 16px -4px rgba(227,178,76,0.6); }
   .card-front .icon{ font-size:clamp(20px,3.6vw,28px); line-height:1; }
   .card-front .label{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.03em; color:var(--text-dim); text-align:center; }
   .card.matched .card-front .label{ color:var(--teal); }
@@ -180,7 +208,7 @@
     display:flex; align-items:center; justify-content:center;
     font-family:'JetBrains Mono',monospace; font-weight:700; font-size:15px; color:var(--text-dim);
   }
-  .tray-slot.filled{ border-style:solid; border-color:var(--amber); color:var(--amber); background:rgba(242,183,5,0.08); animation:pop .25s ease; }
+  .tray-slot.filled{ border-style:solid; border-color:var(--amber); color:var(--amber); background:rgba(199,37,90,0.08); animation:pop .25s ease; }
   @keyframes pop{ from{ transform:scale(0.6); opacity:0; } to{ transform:scale(1); opacity:1; } }
 
   /* ===== OVERLAYS ===== */
@@ -217,7 +245,7 @@
     width:48px; height:56px; border:1px dashed var(--line); border-radius:5px;
     display:flex; align-items:center; justify-content:center;
     font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:var(--amber); cursor:pointer;
-    background:rgba(242,183,5,0.04);
+    background:rgba(199,37,90,0.04);
   }
   .slot.empty{ cursor:default; }
   .slot.shake{ animation:shake .35s ease; border-color:var(--red); color:var(--red); }
@@ -285,6 +313,18 @@
     .overlay-actions{ flex-direction:column; }
     .overlay-actions .btn{ width:100%; }
   }
+
+  /* ===== SHORT / LANDSCAPE PHONE ===== */
+  @media (max-height:480px) and (orientation:landscape){
+    body{ align-items:center; padding:14px 16px; }
+    #start .chip-frame{ padding:20px 24px; }
+    .steps{ margin-bottom:18px; gap:8px; }
+    .stage-preview{ margin-bottom:18px; }
+    .subtitle{ margin-bottom:16px; }
+    .overlay-panel{ max-height:92vh; max-height:92dvh; overflow-y:auto; padding:22px 24px; }
+    .timer-ring{ width:60px; height:60px; margin-bottom:14px; }
+    .timer-ring .inner{ width:46px; height:46px; font-size:16px; }
+  }
 </style>
 </head>
 <body>
@@ -294,45 +334,46 @@
   <!-- START SCREEN -->
   <section id="start" class="screen active">
     <div class="chip-frame">
-      <div class="eyebrow-mark"><span class="dot"></span> BOOTH CHALLENGE // 5 STAGE</div>
+      <div class="club-tag"><span class="persaka-mark">P</span> PERSAKA 26/27 · UTM SCHOOL OF COMPUTING</div>
+      <div class="eyebrow-mark"><span class="dot"></span> BOOTH CHALLENGE // 5 STAGES</div>
       <h1 class="title">MEMORY <span class="b">CODEBREAKER</span></h1>
-      <p class="subtitle">Padankan kad tech, kumpul huruf rahsia, dan pecahkan kod — merentasi 5 stage yang makin mencabar.</p>
+      <p class="subtitle">Match tech cards, collect secret letters, and crack the code — across 5 increasingly challenging stages.</p>
 
       <div class="stage-preview" id="stagePreview"></div>
 
       <div class="steps">
         <div class="step">
           <div class="num mono">1</div>
-          <p>Buka <b>dua kad</b> setiap giliran untuk cari padanan logo &amp; nama tech yang betul.</p>
+          <p>Flip <b>two cards</b> each turn to find the matching tech logo &amp; name.</p>
         </div>
         <div class="step">
           <div class="num mono">2</div>
-          <p>Setiap padanan berjaya akan <b>mendedahkan huruf</b> rahsia ke dalam bekas huruf.</p>
+          <p>Every successful match <b>reveals a secret letter</b> into the letter tray.</p>
         </div>
         <div class="step">
           <div class="num mono">3</div>
-          <p>Susun huruf jadi <b>satu perkataan tech</b> sebelum masa tamat untuk naik ke stage seterusnya.</p>
+          <p>Arrange the letters into <b>one tech word</b> before time runs out to advance to the next stage.</p>
         </div>
       </div>
 
-      <button class="btn btn-primary" id="btnStart">Mula Stage 1</button>
+      <button class="btn btn-primary" id="btnStart">Start Stage 1</button>
     </div>
-    <footer class="credit">STAGE 1–5 // KAD &amp; HURUF BERTAMBAH, MASA BERKURANG</footer>
+    <footer class="credit">STAGE 1–5 // MORE CARDS &amp; LETTERS, LESS TIME · PERSAKA 26/27</footer>
   </section>
 
   <!-- GAME SCREEN -->
   <section id="game" class="screen">
     <div class="topbar">
-      <div class="brand"><span class="dot"></span> MEMORY CODEBREAKER</div>
+      <div class="brand"><span class="persaka-mark">P</span> PERSAKA CODEBREAKER</div>
       <div class="stage-dots" id="stageDots"></div>
       <div class="stats">
-        <div class="stat">PADANAN <span class="sep">/</span> <b id="matchedCount">0</b><span class="sep">/</span><span id="totalPairs">4</span></div>
-        <div class="stat">CUBAAN <span class="sep">/</span> <b id="moveCount">0</b></div>
+        <div class="stat">MATCHES <span class="sep">/</span> <b id="matchedCount">0</b><span class="sep">/</span><span id="totalPairs">4</span></div>
+        <div class="stat">MOVES <span class="sep">/</span> <b id="moveCount">0</b></div>
       </div>
     </div>
     <div class="board" id="board"></div>
     <div class="tray-wrap">
-      <div class="tray-label">HURUF DIKUMPUL:</div>
+      <div class="tray-label">LETTERS COLLECTED:</div>
       <div class="tray" id="tray"></div>
     </div>
   </section>
@@ -342,9 +383,9 @@
 <!-- PHASE 2 OVERLAY -->
 <div class="overlay" id="phase2Overlay">
   <div class="overlay-panel chip-frame">
-    <div class="overlay-eyebrow mono" id="phase2Eyebrow">STAGE 1 // PECAHKAN KOD</div>
-    <h2>Susun Semula Perkataan</h2>
-    <p class="desc">Klik huruf mengikut susunan betul untuk membentuk satu perkataan tech.</p>
+    <div class="overlay-eyebrow mono" id="phase2Eyebrow">STAGE 1 // CRACK THE CODE</div>
+    <h2>Unscramble the Word</h2>
+    <p class="desc">Click the letters in the right order to form a tech word.</p>
 
     <div class="timer-ring" id="timerRing" style="--pct:100">
       <div class="inner mono" id="timerText">30</div>
@@ -354,8 +395,8 @@
     <div class="tiles-row" id="tilesRow"></div>
 
     <div class="overlay-actions">
-      <button class="btn btn-ghost" id="btnClear">Padam</button>
-      <button class="btn btn-primary" id="btnCheck">Semak</button>
+      <button class="btn btn-ghost" id="btnClear">Clear</button>
+      <button class="btn btn-primary" id="btnCheck">Check</button>
     </div>
   </div>
 </div>
@@ -363,12 +404,12 @@
 <!-- STAGE CLEAR OVERLAY -->
 <div class="overlay" id="stageClearOverlay">
   <div class="overlay-panel chip-frame">
-    <div class="stage-clear-badge mono">✓ STAGE SELESAI</div>
-    <h2 id="stageClearTitle">Stage 1 Berjaya!</h2>
+    <div class="stage-clear-badge mono">✓ STAGE CLEARED</div>
+    <h2 id="stageClearTitle">Stage 1 Cleared!</h2>
     <div class="win-word" id="stageClearWord">CACHE</div>
-    <p class="desc" id="stageClearDesc">Bersedia — stage seterusnya lebih mencabar.</p>
+    <p class="desc" id="stageClearDesc">Get ready — the next stage is tougher.</p>
     <div class="overlay-actions">
-      <button class="btn btn-teal" id="btnNextStage">Teruskan</button>
+      <button class="btn btn-teal" id="btnNextStage">Continue</button>
     </div>
   </div>
 </div>
@@ -376,11 +417,12 @@
 <!-- FINAL WIN OVERLAY -->
 <div class="overlay" id="winOverlay">
   <div class="overlay-panel chip-frame">
-    <div class="overlay-eyebrow mono">SEMUA 5 STAGE SELESAI</div>
-    <h2>Tahniah, Anda Juara! 🎉</h2>
-    <p class="desc">Anda berjaya pecahkan kod di semua 5 stage. Sila tunjukkan skrin ini kepada petugas booth untuk tuntut hadiah anda.</p>
+    <div class="club-tag" style="justify-content:center; margin-bottom:14px;"><span class="persaka-mark">P</span> PERSAKA 26/27</div>
+    <div class="overlay-eyebrow mono">ALL 5 STAGES CLEARED</div>
+    <h2>Congratulations, Champion! 🎉</h2>
+    <p class="desc">You cracked the code across all 5 stages. Show this screen to the booth crew to claim your prize.</p>
     <div class="overlay-actions">
-      <button class="btn btn-teal" id="btnPlayAgainWin">Main Semula</button>
+      <button class="btn btn-teal" id="btnPlayAgainWin">Play Again</button>
     </div>
   </div>
 </div>
@@ -388,12 +430,12 @@
 <!-- LOSE OVERLAY -->
 <div class="overlay" id="loseOverlay">
   <div class="overlay-panel chip-frame">
-    <div class="overlay-eyebrow mono">MASA TAMAT — <span id="loseStageLabel">STAGE 1</span></div>
-    <h2>Cubaan Yang Bagus!</h2>
-    <p class="desc">Jawapan yang betul ialah:</p>
+    <div class="overlay-eyebrow mono">TIME'S UP — <span id="loseStageLabel">STAGE 1</span></div>
+    <h2>Good Attempt!</h2>
+    <p class="desc">The correct answer was:</p>
     <div class="lose-word" id="loseWord">CACHE</div>
     <div class="overlay-actions">
-      <button class="btn btn-primary" id="btnPlayAgainLose">Cuba Lagi Dari Stage 1</button>
+      <button class="btn btn-primary" id="btnPlayAgainLose">Try Again From Stage 1</button>
     </div>
   </div>
 </div>
@@ -468,7 +510,7 @@
     STAGES.forEach((s,i)=>{
       const el = document.createElement('div');
       el.className = 'sp-item';
-      el.innerHTML = `<div class="sp-num">STAGE ${i+1}</div><div class="sp-detail">${s.pairs} pasang<br>${s.wordLen} huruf<br>${s.time}s</div>`;
+      el.innerHTML = `<div class="sp-num">STAGE ${i+1}</div><div class="sp-detail">${s.pairs} pairs<br>${s.wordLen} letters<br>${s.time}s</div>`;
       wrap.appendChild(el);
     });
   }
@@ -610,7 +652,7 @@
     tiles = shuffle(collectedLetters.slice()).map(l=>({letter:l, used:false}));
     slots = new Array(targetWord.length).fill(null);
     timeLeft = phaseSeconds;
-    $('phase2Eyebrow').textContent = `STAGE ${currentStage+1} // PECAHKAN KOD`;
+    $('phase2Eyebrow').textContent = `STAGE ${currentStage+1} // CRACK THE CODE`;
     renderPhase2();
     $('phase2Overlay').classList.add('active');
     tickTimer();
@@ -700,9 +742,9 @@
     if(currentStage === STAGES.length - 1){
       $('winOverlay').classList.add('active');
     } else {
-      $('stageClearTitle').textContent = `Stage ${currentStage+1} Berjaya!`;
+      $('stageClearTitle').textContent = `Stage ${currentStage+1} Cleared!`;
       $('stageClearWord').textContent = targetWord;
-      $('stageClearDesc').textContent = `Bersedia untuk Stage ${currentStage+2} — lebih banyak kad, masa lebih singkat.`;
+      $('stageClearDesc').textContent = `Get ready for Stage ${currentStage+2} — more cards, less time.`;
       $('stageClearOverlay').classList.add('active');
     }
   }
