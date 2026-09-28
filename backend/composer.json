@@ -1,0 +1,19 @@
+{
+  "name": "persaka/codebreaker-api",
+  "description": "Leaderboard API for PERSAKA Memory Codebreaker (Slim 4 + SQLite)",
+  "type": "project",
+  "require": {
+    "php": "^8.1",
+    "ext-pdo": "*",
+    "ext-pdo_sqlite": "*",
+    "slim/slim": "^4.12",
+    "slim/psr7": "^1.6"
+  },
+  "autoload": { "psr-4": { "App\\": "src/" } },
+  "scripts": {
+    "start": [
+      "Composer\\Config::disableProcessTimeout",
+      "php -S localhost:8000 -t public"
+    ]
+  }
+}
