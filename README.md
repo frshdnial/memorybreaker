@@ -1,4 +1,4 @@
-# PERSAKA 26/27 · Memory Codebreaker (Arcade Edition)
+# PERSAKA 26/27 · Memory Codebreaker (Pac-Man Arcade Edition)
 
 A Pac-Man-styled memory puzzle game built for the PERSAKA 26/27 booth challenge (UTM School of Computing).
 Players match tech cards, collect secret letters, and unscramble them into a tech word across 5 stages.
