@@ -1,14 +1,13 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Leaderboard from './Leaderboard.vue'
 import Ghost from './Ghost.vue'
 import { useGame } from '../composables/useGame'
 import { submitScore } from '../api'
-import { NAME_MAX, formatScore, formatTime } from '../config'
+import { formatScore, formatTime } from '../config'
 
 const { state, stageCount, nextStage, restart, backToMenu } = useGame()
 
-const name = ref(localStorage.getItem('persaka-name') || '')
 const busy = ref(false)
 const error = ref('')
 const saved = ref(null) // entry returned by the API
@@ -17,29 +16,29 @@ const isWin = computed(() => state.overlay === 'win')
 const isLose = computed(() => state.overlay === 'lose')
 const canSubmit = computed(() => state.totalScore > 0)
 
-function cleanName() {
-  name.value = name.value.toUpperCase().replace(/[^A-Z0-9 _.\-]/g, '').slice(0, NAME_MAX)
-}
-
+// The name was entered on the start screen, so the result screen submits
+// automatically and just reveals the score/rank once the save completes.
 async function save() {
-  cleanName()
-  if (!name.value.trim()) { error.value = 'Enter your name first.'; return }
+  if (!canSubmit.value || busy.value || saved.value) return
   busy.value = true
   error.value = ''
   try {
     saved.value = await submitScore({
-      name: name.value.trim(),
+      name: state.playerName,
       score: state.totalScore,
       timeMs: state.runMs,
       stagesCleared: state.stagesCleared
     })
-    localStorage.setItem('persaka-name', name.value.trim())
   } catch (e) {
     error.value = e.message
   } finally {
     busy.value = false
   }
 }
+
+onMounted(() => {
+  if (isWin.value || isLose.value) save()
+})
 </script>
 
 <template>
@@ -73,26 +72,25 @@ async function save() {
         <p class="desc">The code was <b class="lose-word">{{ state.target }}</b></p>
       </template>
 
-      <dl class="result-stats">
+      <!-- score pops up once the save completes; nothing to type here -->
+      <dl class="result-stats" :class="{ revealing: busy }">
+        <div><dt>Player</dt><dd>{{ state.playerName }}</dd></div>
         <div><dt>Score</dt><dd>{{ formatScore(state.totalScore) }}</dd></div>
         <div><dt>Time</dt><dd>{{ formatTime(state.runMs) }}</dd></div>
         <div><dt>Stages</dt><dd>{{ state.stagesCleared }}/{{ stageCount }}</dd></div>
       </dl>
 
-      <!-- submit form -->
-      <form v-if="canSubmit && !saved" class="submit" @submit.prevent="save">
-        <label for="pname">Enter your name for the leaderboard</label>
-        <div class="submit-row">
-          <input id="pname" v-model="name" :maxlength="NAME_MAX" autocomplete="off" spellcheck="false"
-                 placeholder="AAA" @input="cleanName" />
-          <button class="btn btn-primary" :disabled="busy">{{ busy ? 'Saving...' : 'Save score' }}</button>
-        </div>
-        <p v-if="error" class="form-error" role="alert">{{ error }}</p>
-      </form>
+      <p v-if="busy" class="desc blink">Saving your score...</p>
 
-      <p v-if="saved" class="rank-msg">
-        Saved! You are rank <b>#{{ saved.rank }}</b>.
+      <p v-else-if="saved" class="rank-msg">
+        You are rank <b>#{{ saved.rank }}</b>!
       </p>
+
+      <div v-else-if="error" class="form-error-block">
+        <p class="form-error" role="alert">{{ error }}</p>
+        <button class="btn btn-ghost btn-sm" @click="save">Retry save</button>
+      </div>
+
       <p v-else-if="!canSubmit" class="desc">Clear a stage to earn a leaderboard score.</p>
 
       <Leaderboard v-if="saved" :key="saved.id" :highlight-id="saved.id" />

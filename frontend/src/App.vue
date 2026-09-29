@@ -13,7 +13,7 @@ const showBoard = ref(false)
 
 <template>
   <main class="stage-wrap">
-    <StartScreen v-if="state.screen === 'start'" @start="start" @leaderboard="showBoard = true" />
+    <StartScreen v-if="state.screen === 'start'" @start="name => start(name)" @leaderboard="showBoard = true" />
     <GameScreen v-else @leaderboard="showBoard = true" />
     <footer class="credit">© PERSAKA 26/27 · INSERT COIN · 1 PLAYER</footer>
   </main>

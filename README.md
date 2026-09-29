@@ -1,8 +1,8 @@
 # PERSAKA 26/27 · Memory Codebreaker (Arcade Edition)
 
-A Pac-Man-styled memory puzzle game built for the PERSAKA 26/27 booth challenge (UTM School of Computing).
+A Pac-Man-styled memory puzzle game built for the PERSAKA 26/27 booth challenge (UTM Faculty of Computing).
 Players match tech cards, collect secret letters, and unscramble them into a tech word across 5 stages.
-Every run can be saved to an online leaderboard with the player's name, score and time.
+Every run is saved to an online leaderboard with the player's name, score and time.
 
 - **Frontend:** Vue 3 + Vite
 - **Backend:** PHP 8.1+ with Slim 4
@@ -14,11 +14,12 @@ Every run can be saved to an online leaderboard with the player's name, score an
 
 ### How to play
 
-1. **Match the cards.** Each stage has a board of face-down cards. Flip two per turn to find a tech logo and its matching name (for example the snake and `PYTHON`).
-2. **Collect letters.** Every successful match drops secret letters into the *Letters* tray at the bottom.
-3. **Crack the code.** When every pair is matched, the letters are scrambled. Tap them in the right order to spell one tech word before the timer runs out.
-4. **Advance.** Solve the word to clear the stage. Run out of time and the game is over.
-5. **Save your score.** At the end of a run, enter a name to post your score to the leaderboard.
+1. **Enter your name.** Before the game starts, type the name you want on the leaderboard. It's remembered for next time.
+2. **Match the cards.** Each stage has a board of face-down cards. Flip two per turn to find a tech logo and its matching name (for example the snake and `PYTHON`).
+3. **Collect letters.** Every successful match drops secret letters into the *Letters* tray at the bottom.
+4. **Crack the code.** When every pair is matched, the letters are scrambled. Tap them in the right order to spell one tech word before the timer runs out.
+5. **Advance.** Solve the word to clear the stage. Run out of time and the game is over.
+6. **See your score.** When the run ends (win or lose), the score is saved automatically under the name you entered, and your rank pops up right away — nothing more to type.
 
 ### Stages
 
@@ -32,7 +33,7 @@ The game gets harder each stage: more cards, longer words and less time.
 | 4     | 5          | 6 letters   | 25 s       |
 | 5     | 5          | 7 letters   | 20 s       |
 
-Clearing all 5 stages wins the game. A failed stage ends the run, but the points from the stages you already cleared are kept and can still be saved.
+Clearing all 5 stages wins the game. A failed stage ends the run, but the points from the stages you already cleared are kept and saved.
 
 ---
 
@@ -102,11 +103,13 @@ memorybreaker/
 │   │   ├── api.js         Calls to the backend
 │   │   └── style.css      Arcade theme
 │   └── vite.config.js
-└── backend/           Slim 4 REST API
-    ├── public/index.php   Routes
-    ├── src/               Database, repository, controller, CORS
-    ├── config.php         Settings + .env loader
-    └── .env               Your local database login (not committed)
+├── backend/           Slim 4 REST API
+│   ├── public/index.php   Routes
+│   ├── src/               Database, repository, controller, CORS
+│   ├── config.php         Settings + .env loader
+│   └── .env               Your local database login (not committed)
+└── database/
+    └── schema.sql         MySQL schema (creates the database and scores table)
 ```
 
 ---
@@ -121,32 +124,40 @@ memorybreaker/
 
 ### Step 1: Create the database
 
+The schema is in [`database/schema.sql`](database/schema.sql). It creates the `persaka_codebreaker` database and the `scores` table. It is safe to run more than once.
+
 1. Open Laragon and click **Start All**.
 2. Click **Database** to open HeidiSQL and connect to your MySQL server.
-3. Open the **Query** tab and run:
+3. Import the schema using either method:
 
-```sql
-CREATE DATABASE IF NOT EXISTS persaka_codebreaker
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
+   **Option A: HeidiSQL**
+   - Go to **File → Run SQL file...** and choose `database/schema.sql`.
+   - Or open the file with **File → Load SQL file...**, then press `F9` to run it.
 
-USE persaka_codebreaker;
+   **Option B: command line**
+   ```powershell
+   mysql -u root -p < database/schema.sql
+   ```
+   (Laragon's `mysql.exe` must be on your PATH, or use Laragon's terminal.)
 
-CREATE TABLE IF NOT EXISTS scores (
-  id             INT UNSIGNED     NOT NULL AUTO_INCREMENT,
-  player_name    VARCHAR(12)      NOT NULL,
-  score          INT UNSIGNED     NOT NULL,
-  time_ms        INT UNSIGNED     NOT NULL,
-  stages_cleared TINYINT UNSIGNED NOT NULL DEFAULT 0,
-  created_at     TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  KEY idx_rank (score, time_ms)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-```
+4. In HeidiSQL, right-click the server in the left panel and choose **Refresh**. You should see `persaka_codebreaker` with a `scores` table.
+
+The table has these columns:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | INT, auto increment | Primary key |
+| `player_name` | VARCHAR(12) | Name entered by the player |
+| `score` | INT | Total score of the run |
+| `time_ms` | INT | Active play time in milliseconds |
+| `stages_cleared` | TINYINT | Stages cleared (0 to 5) |
+| `created_at` | TIMESTAMP | When the score was saved |
+
+An index on `(score, time_ms)` keeps the leaderboard query fast.
 
 ### Step 2: Configure the backend
 
-Create a file named exactly `.env` inside the `backend` folder (next to `config.php`):
+Create a file named exactly `.env` inside the `backend` folder (next to `config.php`). A template is provided at `backend/.env.example` — copy it and fill in your password:
 
 ```
 DB_HOST=127.0.0.1
@@ -169,16 +180,7 @@ composer install
 composer start
 ```
 
-`composer start` runs `php -S localhost:8000 -t public`. To stop Composer from ending the server after 5 minutes, make the script in `backend/composer.json` look like this:
-
-```json
-"scripts": {
-  "start": [
-    "Composer\\Config::disableProcessTimeout",
-    "php -S localhost:8000 -t public"
-  ]
-}
-```
+`composer start` runs `php -S localhost:8000 -t public` and is already configured with an unlimited process timeout, so the server won't stop itself after 5 minutes.
 
 Check that it works by opening `http://localhost:8000/api/health`. You should see:
 
@@ -233,10 +235,10 @@ Validation rules: name 1 to 12 characters (letters, numbers, space, `.`, `-`, `_
 | `Failed to listen on localhost:8080 ... forbidden by its access permissions` | Windows reserves some ports. Use another port (for example 8000) in both `composer.json` and `vite.config.js`. |
 | `Access denied for user 'root' ... (using password: NO)` | The password is not being read. Check that `.env` is named exactly `.env`, sits in `backend`, and that `config.php` contains the `.env` loader. |
 | `Access denied ... (using password: YES)` | Wrong username or password. Test the same login in HeidiSQL. |
-| `Unknown database` | The SQL script in Step 1 was not run, or the database name differs from `DB_NAME`. |
+| `Unknown database` | `database/schema.sql` was not imported (Step 1), or the database name differs from `DB_NAME`. |
 | `could not find driver` | In Laragon: Menu → PHP → Extensions → enable `pdo_mysql`, then restart. |
 | `Connection refused` | MySQL is not running. Click **Start All** in Laragon. |
-| `The process ... exceeded the timeout of 300 seconds` | Composer stopped the server after 5 minutes. Use the `disableProcessTimeout` script in Step 3, or run `php -S localhost:8000 -t public` directly. |
+| `The process ... exceeded the timeout of 300 seconds` | Composer stopped the server after 5 minutes. This is already fixed in `backend/composer.json`; if you still see it, run `php -S localhost:8000 -t public` directly instead. |
 | "Cannot read properties of null" when saving a score | The `/api` request is not reaching the Slim backend. Check the proxy port and restart `npm run dev`. |
 | Edits to backend files seem to be ignored | The project is inside OneDrive. Move it to a plain folder such as `C:\laragon\www\memorybreaker`. |
 

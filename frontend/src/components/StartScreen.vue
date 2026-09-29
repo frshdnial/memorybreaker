@@ -1,9 +1,27 @@
 <script setup>
+import { ref } from 'vue'
 import ChaseStrip from './ChaseStrip.vue'
 import Ghost from './Ghost.vue'
-import { STAGES } from '../config'
+import { STAGES, NAME_MAX } from '../config'
 
-defineEmits(['start', 'leaderboard'])
+const emit = defineEmits(['start', 'leaderboard'])
+
+const name = ref(localStorage.getItem('persaka-name') || '')
+const error = ref('')
+
+function cleanName() {
+  name.value = name.value.toUpperCase().replace(/[^A-Z0-9 _.\-]/g, '').slice(0, NAME_MAX)
+}
+
+function handleStart() {
+  cleanName()
+  if (!name.value.trim()) {
+    error.value = 'Enter your name to start.'
+    return
+  }
+  error.value = ''
+  emit('start', name.value.trim())
+}
 </script>
 
 <template>
@@ -12,7 +30,7 @@ defineEmits(['start', 'leaderboard'])
       <div class="logo-badge"><img src="/persaka-logo.png" alt="PERSAKA logo" /></div>
       <div class="marquee-text">
         <p class="club">PERSAKA 26/27</p>
-        <p class="club-sub">UTM School of Computing</p>
+        <p class="club-sub">UTM Faculty of Computing</p>
       </div>
     </div>
 
@@ -43,8 +61,17 @@ defineEmits(['start', 'leaderboard'])
       </div>
     </div>
 
+    <form class="submit name-entry" @submit.prevent="handleStart">
+      <label for="pname">Enter your name to play</label>
+      <div class="submit-row">
+        <input id="pname" v-model="name" :maxlength="NAME_MAX" autocomplete="off" spellcheck="false"
+               placeholder="AAA" @input="cleanName" />
+      </div>
+      <p v-if="error" class="form-error" role="alert">{{ error }}</p>
+    </form>
+
     <div class="actions">
-      <button class="btn btn-primary blink-soft" @click="$emit('start')">Start game</button>
+      <button class="btn btn-primary blink-soft" @click="handleStart">Start game</button>
       <button class="btn btn-ghost" @click="$emit('leaderboard')">High scores</button>
     </div>
   </section>

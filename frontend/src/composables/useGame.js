@@ -24,7 +24,9 @@ const state = reactive({
   totalScore: 0,
   stagesCleared: 0,
   runMs: 0,                 // active play time (excludes the "stage cleared" pauses)
-  lastBreakdown: null
+  lastBreakdown: null,
+  // player identity, entered on the start screen before play begins
+  playerName: localStorage.getItem('persaka-name') || ''
 })
 
 let timerHandle = null
@@ -88,7 +90,11 @@ function resetRun() {
   state.lastBreakdown = null
 }
 
-function start() {
+function start(name) {
+  if (name) {
+    state.playerName = name
+    localStorage.setItem('persaka-name', name)
+  }
   resetRun()
   state.screen = 'game'
   setupStage()
